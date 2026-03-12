@@ -45,7 +45,8 @@ const AddService = () => {
 
             const result = await response.json()
             if (result?.success) {
-                setIsShow(false)
+                // ✅ FIX: Hapus setIsShow(false) yang duplikat
+                // Sebelumnya dipanggil 2x berturut-turut tanpa alasan
                 setIsShow(false)
                 toast.success(result?.message)
                 setTimeout(() => router.refresh(), 1000)
@@ -68,13 +69,13 @@ const AddService = () => {
                         <DialogHeader>
                             <DialogTitle>Add Service Data</DialogTitle>
                             <DialogDescription>
-                                Make changes to your services in here. Click Save when you're done.
+                                Isi data service baru di bawah ini. Klik Save jika sudah selesai.
                             </DialogDescription>
                         </DialogHeader>
                         <FieldGroup>
                             <Field>
                                 <label htmlFor="name">Name</label>
-                                <Input id="name" name="name" type="text" placeholder="Service Name" value={name} onChange={(e) => setName(e.target.value)} />
+                                <Input id="name" name="name" type="text" placeholder="Service Name" value={name} onChange={(e) => setName(e.target.value)} required />
                             </Field>
                             <Field>
                                 <label htmlFor="price">Price</label>

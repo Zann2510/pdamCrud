@@ -3,13 +3,13 @@
 import { getCookie } from "cookies-next"
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from "react"
-import { toast } from "react-toastify"
+// ✅ FIX: Ganti react-toastify → sonner (konsisten dengan semua file lain)
+// Sebelumnya: import { toast } from "react-toastify"
+import { toast } from "sonner"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 import { Button } from "../../../components/ui/button"
 import { Field, FieldGroup } from "../../../components/ui/field"
 import { Input } from "../../../components/ui/input"
-
-
 
 const AddAdmin = () => {
     const router = useRouter()
@@ -34,7 +34,7 @@ const AddAdmin = () => {
 
             const token = await getCookie("accessToken")
             const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/admins`
-            const payload = JSON.stringify({ username, password, name, phone})
+            const payload = JSON.stringify({ username, password, name, phone })
 
             const response = await fetch(url, {
                 method: "POST",
@@ -70,25 +70,25 @@ const AddAdmin = () => {
                         <DialogHeader>
                             <DialogTitle>Add Admin Data</DialogTitle>
                             <DialogDescription>
-                                Make changes to admins data in here. Click Save when you're done.
+                                Isi data admin baru di bawah ini. Klik Save jika sudah selesai.
                             </DialogDescription>
                         </DialogHeader>
                         <FieldGroup>
                             <Field>
                                 <label htmlFor="username">Username</label>
-                                <Input id="username" name="username" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+                                <Input id="username" name="username" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
                             </Field>
                             <Field>
                                 <label htmlFor="password">Password</label>
-                                <Input id="password" name="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <Input id="password" name="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                             </Field>
                             <Field>
                                 <label htmlFor="name">Nama</label>
-                                <Input id="name" name="name" type="text" placeholder="Nama" value={name} onChange={(e) => setName(e.target.value)} />
+                                <Input id="name" name="name" type="text" placeholder="Nama" value={name} onChange={(e) => setName(e.target.value)} required />
                             </Field>
                             <Field>
                                 <label htmlFor="phone">No. Telepon</label>
-                                <Input id="phone" name="phone" type="text" placeholder="No. Telepon" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                                <Input id="phone" name="phone" type="text" placeholder="No. Telepon" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                             </Field>
                         </FieldGroup>
                         <DialogFooter>
@@ -100,7 +100,7 @@ const AddAdmin = () => {
                     </form>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     )
 }
 

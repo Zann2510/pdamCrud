@@ -8,11 +8,17 @@ import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
 
-const DeleteCustomer = ({ selectedData }: { selectedData: Admin }) => {
-
+// ✅ Nama komponen diperbaiki dari DeleteCustomer → DeleteAdmin (lebih akurat)
+const DeleteAdmin = ({ selectedData }: { selectedData: Admin }) => {
+    const router = useRouter()
     const [open, setOpen] = useState<boolean>(false)
 
     const handleSubmit = async (e: FormEvent) => {
+        // ✅ FIX: e.preventDefault() WAJIB ada di form handler
+        // Tanpa ini, browser akan reload halaman saat tombol "Confirm" diklik
+        // karena tombol type="submit" di dalam <form> akan trigger default behavior
+        e.preventDefault()
+
         try {
             const token = await getCookie("accessToken")
             const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/admins/${selectedData.id}`
@@ -29,6 +35,8 @@ const DeleteCustomer = ({ selectedData }: { selectedData: Admin }) => {
             if (result?.success) {
                 setOpen(false)
                 toast.success(result.message)
+                // ✅ Tambahan: refresh data setelah delete berhasil
+                setTimeout(() => router.refresh(), 1000)
             } else {
                 toast.warning(result.message)
             }
@@ -46,8 +54,10 @@ const DeleteCustomer = ({ selectedData }: { selectedData: Admin }) => {
                 <DialogContent>
                     <form onSubmit={handleSubmit}>
                         <DialogHeader>
-                            <DialogTitle>Admin Data</DialogTitle>
-                            <DialogDescription>Are you sure you want to delete {selectedData.name} data? Press Confirm if you do.</DialogDescription>
+                            <DialogTitle>Hapus Admin</DialogTitle>
+                            <DialogDescription>
+                                Apakah kamu yakin ingin menghapus data <strong>{selectedData.name}</strong>? Aksi ini tidak bisa dibatalkan.
+                            </DialogDescription>
                         </DialogHeader>
                         <DialogFooter className="mt-4">
                             <DialogClose asChild>
@@ -62,4 +72,4 @@ const DeleteCustomer = ({ selectedData }: { selectedData: Admin }) => {
     )
 }
 
-export default DeleteCustomer
+export default DeleteAdmin

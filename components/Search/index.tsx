@@ -6,27 +6,46 @@ import { KeyboardEvent, useState } from "react"
 type Props = {
     search: string
 }
+
 const Search = ({ search }: Props) => {
     const [keyword, setKeyword] = useState<string>(search)
     const router = useRouter()
 
     const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-        e.preventDefault()
         if (e.key === "Enter") {
+            e.preventDefault()
             const params = new URLSearchParams(window.location.search)
+
             if (keyword.trim()) {
-                params.set("search", keyword)
+                // Ada keyword → set param search, reset ke page 1
+                params.set("search", keyword.trim())
+                params.set("page", "1")
             } else {
+                // Kosong → hapus param search, reset ke page 1
                 params.delete("search")
-                router.push(`?${params.toString()}`)
+                params.set("page", "1")
             }
+
+            // ✅ FIX: router.push dipanggil di KEDUA kondisi
+            // Sebelumnya hanya dipanggil di kondisi keyword kosong
+            // sehingga mengetik keyword dan Enter tidak pernah trigger pencarian
+            router.push(`?${params.toString()}`)
         }
     }
 
     return (
         <div className="w-full">
-            <input id="keyword" type="text" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Keyword of search" onKeyDown={event => handleSearch(event)} className="w-full border border-primary rounded-md p-2 bg-white text-black"/>
+            <input
+                id="keyword"
+                type="text"
+                value={keyword}
+                onChange={e => setKeyword(e.target.value)}
+                onKeyDown={handleSearch}
+                placeholder="Cari data... (tekan Enter)"
+                className="w-full border border-primary rounded-md p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
         </div>
     )
 }
+
 export default Search
