@@ -1,15 +1,11 @@
-import Header from "../../components/admin-template/header"
+import CustomerNavbar from "../../components/CostumerNaavbar";
 
-export default function CostumerLayout({
-    children,
-}: {
-    children: React.ReactNode
-}) {
+
+export default function CostumerLayout({ children }: { children: React.ReactNode }) {
     return (
-        // ✅ Cukup return div biasa, tidak perlu <html> atau <body>
-        <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <CustomerNavbar />
+            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
                 {children}
             </main>
         </div>
