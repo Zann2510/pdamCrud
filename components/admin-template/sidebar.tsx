@@ -17,16 +17,14 @@ import { usePathname } from "next/navigation"
 import { cn } from "../../lib/utils"
 import { Items } from "../../app/admin/admin_menu"
 import { Droplets } from "lucide-react"
+import LogoutButton from "../ui/logoutbutton"
 
 
 export function AppSidebar() {
-    // usePathname aman dipakai di client component
-    // tidak menyebabkan hydration mismatch karena komponen ini "use client"
     const pathname = usePathname()
 
     return (
         <Sidebar>
-            {/* Logo Header */}
             <SidebarHeader>
                 <div className="flex items-center gap-2.5 px-2 py-3">
                     <div className="w-8 h-8 bg-[#0F5B8C] rounded-lg flex items-center justify-center flex-shrink-0">
@@ -39,7 +37,6 @@ export function AppSidebar() {
                 </div>
             </SidebarHeader>
 
-            {/* Navigation */}
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-xs text-gray-400 uppercase tracking-wider mb-1">
@@ -89,7 +86,7 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            {/* Logout Footer */}
+            {/* ✅ LogoutButton dipasang di sini */}
             <SidebarFooter>
                 <LogoutButton />
             </SidebarFooter>
