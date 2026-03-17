@@ -1,14 +1,21 @@
 import { Admin } from "../../types"
 import { getCookies } from "../../../lib/server-cookies"
-import Search from "../../../components/Search"
+
 import Pagination from "../../../components/Pagination"
 import AddAdmin from "./add"
 import EditAdmin from "./edit"
 import DeleteAdmin from "./delete"
 import ResetPasswordAdmin from "./resetPassword"
-import { UserCog, Phone } from "lucide-react"
+import { UserCog, Phone, Mail, Calendar, Shield, MoreVertical } from "lucide-react"
 import { PageHeader } from "../../../components/ui/pageheader"
 import { EmptyState } from "../../../components/ui/empetystate"
+
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
+import { Button } from "../../../components/ui/button"
+import Search from "../../../components/Search"
+
+
+
 
 type ResultData = {
     success: boolean
@@ -38,74 +45,124 @@ type Props = { searchParams: Promise<{ page?: number; quantity?: number; search?
 
 export default async function AdminsPage(prop: Props) {
     const page = (await prop.searchParams)?.page || 1
-    const quantity = (await prop.searchParams)?.quantity || 10
+    const quantity = (await prop.searchParams)?.quantity || 3 // Naikkan dari 4 ke 6
     const search = (await prop.searchParams)?.search || ""
     const { count, data: admins } = await getAdmins(page, quantity, search)
 
     return (
-        <div className="p-6 animate-fade-in">
+        <div className="p-4 sm:p-6 lg:p-8 animate-fade-in">
             <PageHeader
-                title="Admin Data"
-                description="Kelola semua akun administrator sistem"
+                title="Data Administrator"
+                description="Kelola semua akun administrator sistem PDAM"
                 actions={<AddAdmin />}
             />
 
-            {/* Search */}
-            <div className="mb-5 max-w-sm">
-                <Search search={search} />
+            {/* Search - Diperbesar */}
+            <div className="mb-6 max-w-md">
+                <Search search={search} placeholder="Cari admin berdasarkan nama atau username..." />
             </div>
 
             {/* Content */}
             {admins.length === 0 ? (
                 <EmptyState
                     title="Tidak ada admin ditemukan"
-                    description={search ? `Tidak ada hasil untuk "${search}"` : "Belum ada admin yang terdaftar."}
+                    description={search ? `Tidak ada hasil untuk pencarian "${search}"` : "Belum ada administrator yang terdaftar."}
+                    action={{
+                        text :"Tambah Admin Baru",
+                        onClick: () => document.getElementById('add-admin-trigger')?.click()
+                    }}
                 />
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Grid dengan card yang lebih besar */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {admins.map((admin) => (
                             <div
                                 key={admin.id}
-                                className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all duration-200"
+                                className="bg-white border-2 border-[#C2D9F0] rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                             >
-                                {/* Avatar + Name */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-11 h-11 bg-[#E6F0F9] rounded-full flex items-center justify-center text-[#0F5B8C] font-bold text-lg flex-shrink-0">
-                                        {admin.name?.charAt(0)}
+                                {/* Header dengan Avatar besar dan Actions */}
+                                <div className="flex items-start justify-between mb-5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-gradient-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-md">
+                                            {admin.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-xl text-[#0A2A44]">{admin.name}</p>
+                                            <p className="text-base text-gray-500">@{admin.user.username}</p>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-gray-900 truncate">{admin.name}</p>
-                                        <p className="text-xs text-gray-500 truncate">@{admin.user.username}</p>
+                                    
+                                    {/* Dropdown Menu untuk actions */}
+                                    <DropdownMenu >
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-[#E1EEFB]">
+                                                <MoreVertical className="h-5 w-5 text-gray-500" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuItem onSelect={() => {}}>
+                                                <EditAdmin selectedData={admin} />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => {}}>
+                                                <ResetPasswordAdmin selectedData={admin} />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => {}} className="text-red-600 focus:text-red-600">
+                                                <DeleteAdmin selectedData={admin} />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                {/* Info Details - Dengan font lebih besar */}
+                                <div className="space-y-3 mb-5">
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Mail className="w-5 h-5 text-[#1E4A7A]" />
+                                        <span className="text-base">{admin.user.username}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Phone className="w-5 h-5 text-[#1E4A7A]" />
+                                        <span className="text-base">{admin.phone || "-"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Calendar className="w-5 h-5 text-[#1E4A7A]" />
+                                        <span className="text-base">
+                                            {admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'long',
+                                                year: 'numeric'
+                                            }) : "-"}
+                                        </span>
                                     </div>
                                 </div>
 
-                                {/* Info */}
-                                <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                                    <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                                    <span>{admin.phone}</span>
-                                </div>
-
-                                {/* Badge */}
-                                <div className="mb-4">
-                                    <span className="inline-flex items-center gap-1 text-xs bg-[#E6F0F9] text-[#0F5B8C] px-2 py-0.5 rounded-full font-medium">
-                                        <UserCog className="w-3 h-3" /> Administrator
+                                {/* Badge Role */}
+                                <div className="flex items-center justify-between">
+                                    <span className="inline-flex items-center gap-2 bg-[#E1EEFB] text-[#1E4A7A] px-4 py-2 rounded-full text-sm font-semibold">
+                                        <Shield className="w-4 h-4" />
+                                        Administrator
                                     </span>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-2 flex-wrap border-t border-gray-100 pt-3">
-                                    <EditAdmin selectedData={admin} />
-                                    <DeleteAdmin selectedData={admin} />
-                                    <ResetPasswordAdmin selectedData={admin} />
+                                    <span className="text-xs text-gray-400">
+                                        ID: {admin.id.toString().slice(0, 8)}...
+                                    </span>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="mt-6">
-                        <Pagination count={count} perPage={quantity} currentPage={page} />
+                    {/* Pagination */}
+                    <div className="mt-8 justify-center">
+                        <Pagination 
+                            count={count} 
+                            perPage={quantity} 
+                            currentPage={page}
+                        />
                     </div>
+
+                    {/* Info Total Data */}
+                    <p className="text-center text-gray-500 text-base mt-4">
+                        Menampilkan {admins.length} dari {count} administrator
+                    </p>
                 </>
             )}
         </div>

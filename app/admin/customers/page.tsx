@@ -6,9 +6,11 @@ import AddCustomer from "./add"
 import EditCustomer from "./edit"
 import DeleteCustomer from "./delete"
 import ResetPasswordCustomer from "./resetPassword"
-import { MapPin, Phone, Droplets, Hash } from "lucide-react"
+import { MapPin, Phone, Droplet, Hash, Home, Calendar, MoreVertical } from "lucide-react"
 import { PageHeader } from "../../../components/ui/pageheader"
 import { EmptyState } from "../../../components/ui/empetystate"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
+import { Button } from "../../../components/ui/button"
 
 type ResultData = { success: boolean; message: string; data: Customer[]; count: number }
 type ServiceData = { success: boolean; data: Services[] }
@@ -40,7 +42,7 @@ type Props = { searchParams: Promise<{ page?: number; quantity?: number; search?
 
 export default async function CustomersPage(prop: Props) {
     const page = (await prop.searchParams)?.page || 1
-    const quantity = (await prop.searchParams)?.quantity || 10
+    const quantity = (await prop.searchParams)?.quantity || 3
     const search = (await prop.searchParams)?.search || ""
     const [{ count, data: customers }, services] = await Promise.all([
         getCustomers(page, quantity, search),
@@ -48,73 +50,117 @@ export default async function CustomersPage(prop: Props) {
     ])
 
     return (
-        <div className="p-6 animate-fade-in">
+        <div className="p-4 sm:p-6 lg:p-8 animate-fade-in">
             <PageHeader
-                title="Customer Data"
+                title="Data Pelanggan"
                 description="Kelola semua data pelanggan PDAM"
                 actions={<AddCustomer serviceData={services} />}
             />
 
-            <div className="mb-5 max-w-sm">
-                <Search search={search} />
+            <div className="mb-6 max-w-md">
+                <Search search={search} placeholder="Cari pelanggan berdasarkan nama, nomor, atau alamat..." />
             </div>
 
             {customers.length === 0 ? (
                 <EmptyState
-                    title="Tidak ada pelanggan ditemukan"
-                    description={search ? `Tidak ada hasil untuk "${search}"` : "Belum ada pelanggan yang terdaftar."}
-                />
+        title="Tidak ada pelanggan ditemukan"
+        description={search ? `Tidak ada hasil untuk pencarian "${search}"` : "Belum ada pelanggan yang terdaftar."}
+        action={{
+            text: "Tambah Pelanggan Baru",  // Ubah dari 'label' ke 'text'
+            onClick: () => {
+                const addButton = document.querySelector('[data-add-customer]') as HTMLButtonElement
+                if (addButton) addButton.click()
+            }
+        }}
+    />
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {customers.map((customer) => (
-                            <div key={customer.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all duration-200">
-                                {/* Avatar + Name */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-11 h-11 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 font-bold text-lg flex-shrink-0">
-                                        {customer.name?.charAt(0)}
+                            <div key={customer.id} className="bg-white border-2 border-[#C2D9F0] rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                {/* Header */}
+                                <div className="flex items-start justify-between mb-5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-md">
+                                            {customer.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-xl text-[#0A2A44]">{customer.name}</p>
+                                            <p className="text-base text-gray-500">{customer.customer_number}</p>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-gray-900 truncate">{customer.name}</p>
-                                        <p className="text-xs text-gray-500 truncate">@{customer.user.username}</p>
+                                    
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-[#E1EEFB]">
+                                                <MoreVertical className="h-5 w-5 text-gray-500" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuItem>
+                                                <EditCustomer selectedData={customer} serviceData={services} />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <ResetPasswordCustomer selectedData={customer} />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-600">
+                                                <DeleteCustomer selectedData={customer} />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                {/* Info Details */}
+                                <div className="space-y-3 mb-5">
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Hash className="w-5 h-5 text-emerald-600" />
+                                        <span className="text-base font-medium">{customer.customer_number}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Phone className="w-5 h-5 text-emerald-600" />
+                                        <span className="text-base">{customer.phone}</span>
+                                    </div>
+                                    <div className="flex items-start gap-3 text-gray-600">
+                                        <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
+                                        <span className="text-base">{customer.address}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-gray-600">
+                                        <Home className="w-5 h-5 text-emerald-600" />
+                                        <span className="text-base">
+                                            Bergabung: {new Date(customer.createdAt).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            })}
+                                        </span>
                                     </div>
                                 </div>
 
-                                {/* Info rows */}
-                                <div className="space-y-1.5 text-sm text-gray-500 mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Hash className="w-3.5 h-3.5 flex-shrink-0" />
-                                        <span className="truncate">{customer.customer_number}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                                        <span>{customer.phone}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                                        <span className="truncate">{customer.address}</span>
-                                    </div>
-                                </div>
-
-                                {/* Service badge */}
-                                <div className="mb-4">
-                                    <span className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                                        <Droplets className="w-3 h-3" /> {customer.service.name}
+                                {/* Service Badge */}
+                                <div className="flex items-center justify-between">
+                                    <span className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-semibold">
+                                        <Droplet className="w-4 h-4" />
+                                        {customer.service.name}
                                     </span>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-2 flex-wrap border-t border-gray-100 pt-3">
-                                    <EditCustomer selectedData={customer} serviceData={services} />
-                                    <DeleteCustomer selectedData={customer} />
-                                    <ResetPasswordCustomer selectedData={customer} />
+                                    <span className="text-xs text-gray-400">
+                                        ID: {customer.id.toString().slice(0, 8)}...
+                                    </span>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="mt-6">
-                        <Pagination count={count} perPage={quantity} currentPage={page} />
+
+                    <div className="mt-8 justify-center">
+                        <Pagination 
+                            count={count} 
+                            perPage={quantity} 
+                            currentPage={page}
+                        />
                     </div>
+
+                    <p className="text-center text-gray-500 text-base mt-4">
+                        Menampilkan {customers.length} dari {count} pelanggan
+                    </p>
                 </>
             )}
         </div>

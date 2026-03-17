@@ -46,7 +46,7 @@ const DeleteService = ({ selectedData }: { selectedData: Services }) => {
         <div>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="destructive">Delete</Button>
+                    <Button variant="default">Delete</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <form onSubmit={handleSubmit}>
@@ -60,7 +60,7 @@ const DeleteService = ({ selectedData }: { selectedData: Services }) => {
                             <DialogClose asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DialogClose>
-                            <Button type="submit" variant="destructive">Confirm</Button>
+                            <Button type="submit" variant="outline">Confirm</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

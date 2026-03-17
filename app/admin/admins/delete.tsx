@@ -49,7 +49,7 @@ const DeleteAdmin = ({ selectedData }: { selectedData: Admin }) => {
         <div>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="destructive">Delete</Button>
+                    <Button variant="default">Delete</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <form onSubmit={handleSubmit}>
@@ -63,7 +63,7 @@ const DeleteAdmin = ({ selectedData }: { selectedData: Admin }) => {
                             <DialogClose asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DialogClose>
-                            <Button type="submit" variant="destructive">Confirm</Button>
+                            <Button type="submit" variant="outline">Confirm</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

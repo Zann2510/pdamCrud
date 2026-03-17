@@ -78,21 +78,21 @@ const EditService = ({ selectedData }: { selectedData: Services }) => {
                             </Field>
                             <Field>
                                 <label htmlFor="price">Price</label>
-                                <Input id="price" name="price" type="number" placeholder="0" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                                <Input id="price" name="price" type="text"  value={Number(price)} onChange={(e) => setPrice(Number(e.target.value))} />
                             </Field>
                             <Field>
                                 <label htmlFor="min_usage">Minimum Usage</label>
-                                <Input id="min_usage" name="min_usage" type="number" placeholder="0" value={min_usage} onChange={(e) => setMinUsage(Number(e.target.value))} />
+                                <Input id="min_usage" name="min_usage" type="text"  value={Number(min_usage)} onChange={(e) => setMinUsage(Number(e.target.value))} />
                             </Field>
                             <Field>
                                 <label htmlFor="max_usage">Maximum Usage</label>
-                                <Input id="max_usage" name="max_usage" type="number" placeholder="0" value={max_usage} onChange={(e) => setMaxUsage(Number(e.target.value))} />
+                                <Input id="max_usage" name="max_usage" type="text"  value={Number(max_usage)} onChange={(e) => setMaxUsage(Number(e.target.value))} />
                             </Field>
                             <DialogFooter>
                                 <DialogClose asChild>
                                     <Button variant="outline">Cancel</Button>
                                 </DialogClose>
-                                <Button type="submit">Save Changes</Button>
+                                <Button variant="outline" type="submit">Save Changes</Button>
                             </DialogFooter>
                         </FieldGroup>
                     </form>

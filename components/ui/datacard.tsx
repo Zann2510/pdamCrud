@@ -6,11 +6,11 @@ interface DataCardProps {
     subtitle?: string
     icon: ReactNode
     children: ReactNode
-    actions?: ReactNode
+    action?: ReactNode
     className?: string
 }
 
-export function DataCard({ title, subtitle, icon, children, actions, className }: DataCardProps) {
+export function DataCard({ title, subtitle, icon, children, action, className }: DataCardProps) {
     return (
         <div className={cn(
             "bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200",
@@ -27,7 +27,7 @@ export function DataCard({ title, subtitle, icon, children, actions, className }
                             {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
                         </div>
                     </div>
-                    {actions && <div className="flex items-center gap-2">{actions}</div>}
+                    {action && <div className="flex items-center gap-2">{action}</div>}
                 </div>
             </div>
             <div className="p-5">

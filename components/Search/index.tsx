@@ -1,51 +1,66 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { KeyboardEvent, useState } from "react"
+import { Search as SearchIcon } from "lucide-react"
+import { useState, useEffect } from "react"
 
-type Props = {
-    search: string
+interface Props {
+    search?: string
+    placeholder: string
+    className?: string
+    onSearch?: (value: string) => void
 }
 
-const Search = ({ search }: Props) => {
-    const [keyword, setKeyword] = useState<string>(search)
+export default function Search({ search = "", placeholder = "Cari...", className = "", onSearch }: Props) {
     const router = useRouter()
+    const [value, setValue] = useState(search)
 
-    const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            e.preventDefault()
+    // Update value when search prop changes
+    useEffect(() => {
+        setValue(search)
+    }, [search])
+
+    const handleSearch = () => {
+        if (onSearch) {
+            onSearch(value)
+        } else {
             const params = new URLSearchParams(window.location.search)
-
-            if (keyword.trim()) {
-                // Ada keyword → set param search, reset ke page 1
-                params.set("search", keyword.trim())
-                params.set("page", "1")
+            if (value) {
+                params.set("search", value)
+                params.set("page", "1") // Reset ke halaman pertama
             } else {
-                // Kosong → hapus param search, reset ke page 1
                 params.delete("search")
-                params.set("page", "1")
             }
-
-            // ✅ FIX: router.push dipanggil di KEDUA kondisi
-            // Sebelumnya hanya dipanggil di kondisi keyword kosong
-            // sehingga mengetik keyword dan Enter tidak pernah trigger pencarian
             router.push(`?${params.toString()}`)
         }
     }
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            handleSearch()
+        }
+    }
+
     return (
-        <div className="w-full">
+        <div className={`relative ${className}`}>
             <input
-                id="keyword"
                 type="text"
-                value={keyword}
-                onChange={e => setKeyword(e.target.value)}
-                onKeyDown={handleSearch}
-                placeholder="Cari data... (tekan Enter)"
-                className="w-full border border-primary rounded-md p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                className="w-full p-4 pr-12 text-lg border-2 border-[#C2D9F0] rounded-xl bg-white 
+                         focus:outline-none focus:border-[#1E4A7A] focus:ring-4 focus:ring-[#1E4A7A]/20 
+                         transition-all placeholder:text-gray-400"
             />
+            <button
+                onClick={handleSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 
+                         hover:text-[#1E4A7A] transition-colors"
+                aria-label="Cari"
+            >
+                <SearchIcon className="w-6 h-6" />
+            </button>
         </div>
     )
 }
-
-export default Search
