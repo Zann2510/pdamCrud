@@ -1,16 +1,12 @@
 import { Customer, Services } from "../../types"
 import { getCookies } from "../../../lib/server-cookies"
+import { MapPin, Phone, Droplet, Hash, Home } from "lucide-react"
+import { PageHeader } from "../../../components/ui/pageheader"
+import { EmptyState } from "../../../components/ui/empetystate"
 import Search from "../../../components/Search"
 import Pagination from "../../../components/Pagination"
 import AddCustomer from "./add"
-import EditCustomer from "./edit"
-import DeleteCustomer from "./delete"
-import ResetPasswordCustomer from "./resetPassword"
-import { MapPin, Phone, Droplet, Hash, Home, Calendar, MoreVertical } from "lucide-react"
-import { PageHeader } from "../../../components/ui/pageheader"
-import { EmptyState } from "../../../components/ui/empetystate"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
-import { Button } from "../../../components/ui/button"
+import { CustomerActions } from "./actions"
 
 type ResultData = { success: boolean; message: string; data: Customer[]; count: number }
 type ServiceData = { success: boolean; data: Services[] }
@@ -63,16 +59,9 @@ export default async function CustomersPage(prop: Props) {
 
             {customers.length === 0 ? (
                 <EmptyState
-        title="Tidak ada pelanggan ditemukan"
-        description={search ? `Tidak ada hasil untuk pencarian "${search}"` : "Belum ada pelanggan yang terdaftar."}
-        action={{
-            text: "Tambah Pelanggan Baru",  // Ubah dari 'label' ke 'text'
-            onClick: () => {
-                const addButton = document.querySelector('[data-add-customer]') as HTMLButtonElement
-                if (addButton) addButton.click()
-            }
-        }}
-    />
+                    title="Tidak ada pelanggan ditemukan"
+                    description={search ? `Tidak ada hasil untuk pencarian "${search}"` : "Belum ada pelanggan yang terdaftar."}
+                />
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -89,28 +78,11 @@ export default async function CustomersPage(prop: Props) {
                                             <p className="text-base text-gray-500">{customer.customer_number}</p>
                                         </div>
                                     </div>
-                                    
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-[#E1EEFB]">
-                                                <MoreVertical className="h-5 w-5 text-gray-500" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            <DropdownMenuItem>
-                                                <EditCustomer selectedData={customer} serviceData={services} />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <ResetPasswordCustomer selectedData={customer} />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">
-                                                <DeleteCustomer selectedData={customer} />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    {/* ✅ Client Component tersendiri */}
+                                    <CustomerActions customer={customer} services={services} />
                                 </div>
 
-                                {/* Info Details */}
+                                {/* Info */}
                                 <div className="space-y-3 mb-5">
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <Hash className="w-5 h-5 text-emerald-600" />
@@ -127,10 +99,9 @@ export default async function CustomersPage(prop: Props) {
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <Home className="w-5 h-5 text-emerald-600" />
                                         <span className="text-base">
-                                            Bergabung: {new Date(customer.createdAt).toLocaleDateString('id-ID', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric'
+                                            Bergabung:{" "}
+                                            {new Date(customer.createdAt).toLocaleDateString("id-ID", {
+                                                day: "numeric", month: "short", year: "numeric"
                                             })}
                                         </span>
                                     </div>
@@ -150,12 +121,8 @@ export default async function CustomersPage(prop: Props) {
                         ))}
                     </div>
 
-                    <div className="mt-8 justify-center">
-                        <Pagination 
-                            count={count} 
-                            perPage={quantity} 
-                            currentPage={page}
-                        />
+                    <div className="mt-8">
+                        <Pagination count={count} perPage={quantity} currentPage={page} />
                     </div>
 
                     <p className="text-center text-gray-500 text-base mt-4">

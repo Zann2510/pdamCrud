@@ -1,21 +1,12 @@
 import { Admin } from "../../types"
 import { getCookies } from "../../../lib/server-cookies"
-
-import Pagination from "../../../components/Pagination"
-import AddAdmin from "./add"
-import EditAdmin from "./edit"
-import DeleteAdmin from "./delete"
-import ResetPasswordAdmin from "./resetPassword"
-import { UserCog, Phone, Mail, Calendar, Shield, MoreVertical } from "lucide-react"
+import { Mail, Phone, Calendar, Shield } from "lucide-react"
 import { PageHeader } from "../../../components/ui/pageheader"
 import { EmptyState } from "../../../components/ui/empetystate"
-
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
-import { Button } from "../../../components/ui/button"
 import Search from "../../../components/Search"
-
-
-
+import Pagination from "../../../components/Pagination"
+import AddAdmin from "./add"
+import { AdminActions } from "./actions"
 
 type ResultData = {
     success: boolean
@@ -36,7 +27,7 @@ async function getAdmins(page: number, quantity: number, search: string): Promis
         )
         const data: ResultData = await res.json()
         return res.ok ? data : { success: false, message: data.message, data: [], count: 0 }
-    } catch (e) {
+    } catch {
         return { success: false, message: "Gagal memuat data", data: [], count: 0 }
     }
 }
@@ -45,7 +36,7 @@ type Props = { searchParams: Promise<{ page?: number; quantity?: number; search?
 
 export default async function AdminsPage(prop: Props) {
     const page = (await prop.searchParams)?.page || 1
-    const quantity = (await prop.searchParams)?.quantity || 3 // Naikkan dari 4 ke 6
+    const quantity = (await prop.searchParams)?.quantity || 3
     const search = (await prop.searchParams)?.search || ""
     const { count, data: admins } = await getAdmins(page, quantity, search)
 
@@ -57,31 +48,24 @@ export default async function AdminsPage(prop: Props) {
                 actions={<AddAdmin />}
             />
 
-            {/* Search - Diperbesar */}
             <div className="mb-6 max-w-md">
                 <Search search={search} placeholder="Cari admin berdasarkan nama atau username..." />
             </div>
 
-            {/* Content */}
             {admins.length === 0 ? (
                 <EmptyState
                     title="Tidak ada admin ditemukan"
-                    description={search ? `Tidak ada hasil untuk pencarian "${search}"` : "Belum ada administrator yang terdaftar."}
-                    action={{
-                        text :"Tambah Admin Baru",
-                        onClick: () => document.getElementById('add-admin-trigger')?.click()
-                    }}
+                    description={search ? `Tidak ada hasil untuk "${search}"` : "Belum ada administrator yang terdaftar."}
                 />
             ) : (
                 <>
-                    {/* Grid dengan card yang lebih besar */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {admins.map((admin) => (
                             <div
                                 key={admin.id}
                                 className="bg-white border-2 border-[#C2D9F0] rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                             >
-                                {/* Header dengan Avatar besar dan Actions */}
+                                {/* Header */}
                                 <div className="flex items-start justify-between mb-5">
                                     <div className="flex items-center gap-4">
                                         <div className="w-16 h-16 bg-gradient-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-md">
@@ -92,29 +76,10 @@ export default async function AdminsPage(prop: Props) {
                                             <p className="text-base text-gray-500">@{admin.user.username}</p>
                                         </div>
                                     </div>
-                                    
-                                    {/* Dropdown Menu untuk actions */}
-                                    <DropdownMenu >
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-[#E1EEFB]">
-                                                <MoreVertical className="h-5 w-5 text-gray-500" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            <DropdownMenuItem onSelect={() => {}}>
-                                                <EditAdmin selectedData={admin} />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => {}}>
-                                                <ResetPasswordAdmin selectedData={admin} />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => {}} className="text-red-600 focus:text-red-600">
-                                                <DeleteAdmin selectedData={admin} />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <AdminActions admin={admin} />
                                 </div>
 
-                                {/* Info Details - Dengan font lebih besar */}
+                                {/* Info */}
                                 <div className="space-y-3 mb-5">
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <Mail className="w-5 h-5 text-[#1E4A7A]" />
@@ -127,16 +92,16 @@ export default async function AdminsPage(prop: Props) {
                                     <div className="flex items-center gap-3 text-gray-600">
                                         <Calendar className="w-5 h-5 text-[#1E4A7A]" />
                                         <span className="text-base">
-                                            {admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('id-ID', {
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            }) : "-"}
+                                            {admin.createdAt
+                                                ? new Date(admin.createdAt).toLocaleDateString("id-ID", {
+                                                    day: "numeric", month: "long", year: "numeric"
+                                                })
+                                                : "-"}
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* Badge Role */}
+                                {/* Badge */}
                                 <div className="flex items-center justify-between">
                                     <span className="inline-flex items-center gap-2 bg-[#E1EEFB] text-[#1E4A7A] px-4 py-2 rounded-full text-sm font-semibold">
                                         <Shield className="w-4 h-4" />
@@ -150,16 +115,10 @@ export default async function AdminsPage(prop: Props) {
                         ))}
                     </div>
 
-                    {/* Pagination */}
-                    <div className="mt-8 justify-center">
-                        <Pagination 
-                            count={count} 
-                            perPage={quantity} 
-                            currentPage={page}
-                        />
+                    <div className="mt-8">
+                        <Pagination count={count} perPage={quantity} currentPage={page} />
                     </div>
 
-                    {/* Info Total Data */}
                     <p className="text-center text-gray-500 text-base mt-4">
                         Menampilkan {admins.length} dari {count} administrator
                     </p>
