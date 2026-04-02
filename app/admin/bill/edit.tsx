@@ -1,6 +1,6 @@
 "use client"
 
-import { Customer } from "../../types"
+import { Bill } from "../../types"
 import { Button } from "../../../components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 import { Field, FieldGroup } from "../../../components/ui/field"
@@ -10,34 +10,44 @@ import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
 
-const AddBill = ({ customers }: { customers: Customer[] }) => {
+const EditBill = ({ selectedData }: { selectedData: Bill }) => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
-    const [customer_id, setCustomerId] = useState<number>(0)
-    const [usage, setUsage] = useState<number>(0)
-    const [period, setPeriod] = useState<string>("")
+    const [usageValue, setUsageValue] = useState<number>(0)
+    // ✅ month dan year terpisah
+    const [month, setMonth] = useState<number>(1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
 
     const openModal = () => {
         setOpen(true)
-        setCustomerId(0)
-        setUsage(0)
-        // Default ke bulan ini
-        const now = new Date()
-        setPeriod(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`)
+        // ✅ Gunakan field API yang benar
+        setUsageValue(selectedData.usage_value)
+        setMonth(selectedData.month)
+        setYear(selectedData.year)
+    }
+
+    // ✅ Helper untuk format input type="month" (yyyy-MM)
+    const periodValue = `${year}-${String(month).padStart(2, "0")}`
+
+    const handlePeriodChange = (val: string) => {
+        const [y, m] = val.split("-")
+        setYear(Number(y))
+        setMonth(Number(m))
     }
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
         try {
             const token = await getCookie("accessToken")
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/bills`, {
-                method: "POST",
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/bills/${selectedData.id}`, {
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ customer_id, usage, period })
+                // ✅ Kirim field sesuai API
+                body: JSON.stringify({ usage_value: usageValue, month, year })
             })
             const result = await res.json()
             if (result?.success) {
@@ -55,42 +65,24 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button onClick={openModal}>Buat Tagihan</Button>
+                <Button onClick={openModal} variant="secondary">Edit</Button>
             </DialogTrigger>
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Buat Tagihan Baru</DialogTitle>
+                        <DialogTitle>Edit Tagihan</DialogTitle>
                         <DialogDescription>
-                            Input pemakaian air pelanggan untuk periode tertentu.
+                            Ubah data tagihan untuk <strong>{selectedData.customer?.name}</strong>.
                         </DialogDescription>
                     </DialogHeader>
                     <FieldGroup className="mt-4">
-                        <Field>
-                            <label htmlFor="customer">Pelanggan</label>
-                            <select
-                                id="customer"
-                                required
-                                className="w-full border rounded-lg p-2 text-sm"
-                                value={customer_id}
-                                onChange={(e) => setCustomerId(Number(e.target.value))}
-                            >
-                                <option value={0}>Pilih Pelanggan</option>
-                                {customers.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name} — {c.customer_number}
-                                    </option>
-                                ))}
-                            </select>
-                        </Field>
                         <Field>
                             <label htmlFor="period">Periode (Bulan)</label>
                             <Input
                                 id="period"
                                 type="month"
-                                required
-                                value={period}
-                                onChange={(e) => setPeriod(e.target.value)}
+                                value={periodValue}
+                                onChange={(e) => handlePeriodChange(e.target.value)}
                             />
                         </Field>
                         <Field>
@@ -99,10 +91,8 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                                 id="usage"
                                 type="number"
                                 min={0}
-                                required
-                                placeholder="Contoh: 15"
-                                value={usage}
-                                onChange={(e) => setUsage(Number(e.target.value))}
+                                value={usageValue}
+                                onChange={(e) => setUsageValue(Number(e.target.value))}
                             />
                         </Field>
                     </FieldGroup>
@@ -110,7 +100,7 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                         <DialogClose asChild>
                             <Button variant="outline">Batal</Button>
                         </DialogClose>
-                        <Button type="submit">Simpan</Button>
+                        <Button type="submit">Simpan Perubahan</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -118,4 +108,4 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
     )
 }
 
-export default AddBill
+export default EditBill

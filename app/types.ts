@@ -19,6 +19,17 @@ export interface Admin {
   user: User
 }
 
+export interface Services {
+  id: number
+  name: string
+  min_usage: number
+  max_usage: number
+  price: number
+  owner_token: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Customer {
   id: number
   user_id: number
@@ -34,13 +45,22 @@ export interface Customer {
   service: Services
 }
 
-export interface Services {
-  id: number
-  name: string
-  min_usage: number
-  max_usage: number
-  price: number
-  owner_token: string
-  createdAt: string
-  updatedAt: string
+export type Bill = {
+    id: number
+    customer_id: number
+    admin_id: number
+    month: number
+    year: number
+    measurement_number: string
+    usage_value: number
+    price: number
+    service_id: number
+    paid: boolean
+    owner_token: string
+    createdAt: string
+    updatedAt: string
+    customer?: {
+        name: string
+        customer_number: string
+    }
 }

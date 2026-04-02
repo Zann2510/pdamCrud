@@ -28,7 +28,7 @@ export const Items = [
     },
     {
         title: "Bill",
-        url: "#",
+        url: "/admin/bill",
         icon: Receipt
     },
     {
