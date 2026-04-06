@@ -14,20 +14,32 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [customer_id, setCustomerId] = useState<number>(0)
-    const [usage, setUsage] = useState<number>(0)
-    const [period, setPeriod] = useState<string>("")
+    const [usage_value, setUsageValue] = useState<number>(0)
+    const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
 
     const openModal = () => {
         setOpen(true)
         setCustomerId(0)
-        setUsage(0)
-        // Default ke bulan ini
-        const now = new Date()
-        setPeriod(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`)
+        setUsageValue(0)
+        setMonth(new Date().getMonth() + 1)
+        setYear(new Date().getFullYear())
+    }
+
+    // Helper: konversi input type="month" (yyyy-MM) → month + year
+    const periodValue = `${year}-${String(month).padStart(2, "0")}`
+    const handlePeriodChange = (val: string) => {
+        const [y, m] = val.split("-")
+        setYear(Number(y))
+        setMonth(Number(m))
     }
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
+        if (customer_id === 0) {
+            toast.warning("Pilih pelanggan terlebih dahulu.")
+            return
+        }
         try {
             const token = await getCookie("accessToken")
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/bills`, {
@@ -37,7 +49,8 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                     "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ customer_id, usage, period })
+                // ✅ Kirim field sesuai Bill type: usage_value, month, year
+                body: JSON.stringify({ customer_id, usage_value, month, year })
             })
             const result = await res.json()
             if (result?.success) {
@@ -89,20 +102,20 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                                 id="period"
                                 type="month"
                                 required
-                                value={period}
-                                onChange={(e) => setPeriod(e.target.value)}
+                                value={periodValue}
+                                onChange={(e) => handlePeriodChange(e.target.value)}
                             />
                         </Field>
                         <Field>
-                            <label htmlFor="usage">Pemakaian (m³)</label>
+                            <label htmlFor="usage_value">Pemakaian (m³)</label>
                             <Input
-                                id="usage"
+                                id="usage_value"
                                 type="number"
                                 min={0}
                                 required
                                 placeholder="Contoh: 15"
-                                value={usage}
-                                onChange={(e) => setUsage(Number(e.target.value))}
+                                value={usage_value}
+                                onChange={(e) => setUsageValue(Number(e.target.value))}
                             />
                         </Field>
                     </FieldGroup>

@@ -1,11 +1,11 @@
-import CustomerNavbar from "../../components/CostumerNaavbar";
-
+import CustomerNavbar from "../../components/CostumerNaavbar"
 
 export default function CostumerLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <CustomerNavbar />
-            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+            {/* ✅ FIX: pt-16 mengimbangi navbar fixed h-16 agar konten tidak tertutup */}
+            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-16 pb-6">
                 {children}
             </main>
         </div>
