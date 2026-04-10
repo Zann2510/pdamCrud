@@ -64,3 +64,24 @@ export type Bill = {
         customer_number: string
     }
 }
+
+export type PaymentStatus = "PENDING" | "APPROVED" | "REJECTED"
+
+export interface Payment {
+  id: number
+  bill_id: number
+  customer_id: number
+  amount: number
+  payment_method: string
+  proof_url?: string
+  notes?: string
+  status: PaymentStatus
+  owner_token: string
+  createdAt: string
+  updatedAt: string
+  bill?: Bill
+  customer?: {
+    name: string
+    customer_number: string
+  }
+}

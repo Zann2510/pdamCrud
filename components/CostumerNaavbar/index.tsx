@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Droplets, Home, User, FileText, Menu, X, LogOut } from "lucide-react"
+import { Droplets, Home, User, FileText, CreditCard, Menu, X, LogOut } from "lucide-react"
 import { useState } from "react"
 import { cn } from "../../lib/utils"
 import { deleteCookie } from "cookies-next"
@@ -12,6 +12,8 @@ const menuItems = [
     { href: "/costumer/dashboard", label: "Dashboard", icon: Home },
     { href: "/costumer/profile", label: "Profile", icon: User },
     { href: "/costumer/bills", label: "Tagihan", icon: FileText },
+    { href: "/costumer/payments", label: "Pembayaran", icon: CreditCard },
+    
 ]
 
 export default function CustomerNavbar() {
