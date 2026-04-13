@@ -1,13 +1,14 @@
+// app/costumer/payments/form.tsx
 "use client"
 
 import { Bill, Payment } from "../../types"
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useRef } from "react"
 import { getCookie } from "cookies-next/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { 
-    CreditCard, Clock, CheckCircle, XCircle, 
-    Receipt, Banknote, Wallet
+    Clock, CheckCircle, XCircle, 
+    Receipt, Banknote, Wallet, Upload, ImageIcon
 } from "lucide-react"
 import { Button } from "../../../components/ui/button"
 
@@ -19,9 +20,9 @@ const PAYMENT_METHODS = [
 
 const StatusBadge = ({ status }: { status: Payment["status"] }) => {
     const map = {
-        PENDING:  { label: "Menunggu Verifikasi", color: "bg-amber-50 text-amber-700",  icon: <Clock className="w-3 h-3" /> },
+        PENDING:  { label: "Menunggu Verifikasi", color: "bg-amber-50 text-amber-700",     icon: <Clock className="w-3 h-3" /> },
         APPROVED: { label: "Disetujui",           color: "bg-emerald-50 text-emerald-700", icon: <CheckCircle className="w-3 h-3" /> },
-        REJECTED: { label: "Ditolak",             color: "bg-red-50 text-red-700",      icon: <XCircle className="w-3 h-3" /> },
+        REJECTED: { label: "Ditolak",             color: "bg-red-50 text-red-700",         icon: <XCircle className="w-3 h-3" /> },
     }
     const s = map[status]
     return (
@@ -39,41 +40,85 @@ export default function PaymentForm({
     myPayments: Payment[] 
 }) {
     const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
     const [selectedBillId, setSelectedBillId] = useState<number>(0)
     const [method, setMethod] = useState("TRANSFER_BANK")
     const [notes, setNotes] = useState("")
+    const [proofFile, setProofFile] = useState<File | null>(null)
+    const [proofPreview, setProofPreview] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
 
     const selectedBill = unpaidBills.find(b => b.id === selectedBillId)
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validasi ukuran max 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            toast.warning("Ukuran file maksimal 2MB")
+            return
+        }
+
+        // Validasi tipe file
+        if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
+            toast.warning("Format file harus JPG, PNG, atau WEBP")
+            return
+        }
+
+        setProofFile(file)
+        setProofPreview(URL.createObjectURL(file))
+    }
+
+    const handleRemoveFile = () => {
+        setProofFile(null)
+        setProofPreview(null)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
+
         if (!selectedBillId) {
             toast.warning("Pilih tagihan terlebih dahulu")
             return
         }
+
+        // ✅ Validasi proof file wajib diisi
+        if (!proofFile) {
+            toast.warning("Bukti pembayaran wajib diupload")
+            return
+        }
+
         setLoading(true)
         try {
             const token = await getCookie("accessToken")
+
+            // ✅ Gunakan FormData karena ada file upload
+            const formData = new FormData()
+            formData.append("bill_id", String(selectedBillId))
+            formData.append("payment_method", method)
+            formData.append("amount", String(selectedBill ? selectedBill.usage_value * selectedBill.price : 0))
+            formData.append("notes", notes)
+            formData.append("proof_file", proofFile)  // ← field name sesuaikan dengan backend
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/payments`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    // ✅ Jangan set Content-Type saat FormData — browser akan otomatis set boundary
                     "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    bill_id: selectedBillId,
-                    payment_method: method,
-                    amount: selectedBill ? selectedBill.usage_value * selectedBill.price : 0,
-                    notes
-                })
+                body: formData
             })
+
             const result = await res.json()
             if (result?.success) {
                 toast.success("Pembayaran berhasil diajukan, menunggu verifikasi admin")
                 setSelectedBillId(0)
                 setNotes("")
+                handleRemoveFile()
                 setTimeout(() => router.refresh(), 1000)
             } else {
                 toast.warning(result?.message)
@@ -87,7 +132,6 @@ export default function PaymentForm({
 
     return (
         <div className="space-y-6">
-            {/* Form Submit Payment */}
             {unpaidBills.length > 0 ? (
                 <div className="bg-white border-2 border-[#C2D9F0] rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-5">
@@ -156,16 +200,64 @@ export default function PaymentForm({
                             </div>
                         </div>
 
+                        {/* ✅ Upload Bukti Pembayaran — field baru */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                Bukti Pembayaran <span className="text-red-500">*</span>
+                            </label>
+
+                            {!proofPreview ? (
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-[#0F5B8C] hover:bg-[#E6F0F9]/30 transition-all"
+                                >
+                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                    <p className="text-sm font-medium text-gray-600">Klik untuk upload foto bukti</p>
+                                    <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP — Maks. 2MB</p>
+                                </div>
+                            ) : (
+                                <div className="relative rounded-xl overflow-hidden border-2 border-[#0F5B8C]">
+                                    <img
+                                        src={proofPreview}
+                                        alt="Bukti pembayaran"
+                                        className="w-full max-h-48 object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveFile}
+                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                    >
+                                        ✕
+                                    </button>
+                                    <div className="p-2 bg-[#E6F0F9] flex items-center gap-2">
+                                        <ImageIcon className="w-4 h-4 text-[#0F5B8C]" />
+                                        <span className="text-xs text-[#0F5B8C] font-medium truncate">
+                                            {proofFile?.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                        </div>
+
                         {/* Catatan */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1.5">
                                 Catatan <span className="text-gray-400 font-normal">(opsional)</span>
                             </label>
                             <textarea
-                                rows={3}
+                                rows={2}
                                 value={notes}
                                 onChange={e => setNotes(e.target.value)}
-                                placeholder="Contoh: Sudah transfer via BCA ke rekening 1234567"
+                                placeholder="Contoh: Transfer via BCA atas nama Budi"
                                 className="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0F5B8C] resize-none"
                             />
                         </div>
@@ -207,7 +299,7 @@ export default function PaymentForm({
                                             Rp {payment.amount.toLocaleString("id-ID")}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            {payment.payment_method.replace("_", " ")} · {" "}
+                                            {payment.payment_method.replace(/_/g, " ")} ·{" "}
                                             {new Date(payment.createdAt).toLocaleDateString("id-ID")}
                                         </p>
                                     </div>

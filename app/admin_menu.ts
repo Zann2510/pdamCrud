@@ -1,4 +1,4 @@
-import { Home, UserPen, User, Users, Toolbox, Receipt, Banknote} from "lucide-react"
+import { Home, UserPen, User, Users, Toolbox, Receipt, CreditCard} from "lucide-react"
 
 export const Items = [
     {
@@ -33,7 +33,7 @@ export const Items = [
     },
     {
         title: "Payments",
-        url: "#",
-        icon: Banknote
+        url: "/admin/payments",
+        icon: CreditCard
     }
 ]
