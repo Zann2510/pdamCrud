@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Droplet, Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { Droplet, Eye, EyeOff, ArrowLeft, CheckCircle, AlertCircle, Loader2, KeyRound } from "lucide-react"
 
 export default function SignUpPage() {
     const router = useRouter()
@@ -11,6 +11,8 @@ export default function SignUpPage() {
     const [password, setPassword] = useState("")
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
+    // ✅ FIX #1: Tambah field registrationToken — validated server-side
+    const [registrationToken, setRegistrationToken] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<{
@@ -18,11 +20,13 @@ export default function SignUpPage() {
         password?: string
         name?: string
         phone?: string
+        registrationToken?: string
         general?: string
     }>({})
 
     const validateForm = () => {
         const newErrors: typeof errors = {}
+        if (!registrationToken.trim()) newErrors.registrationToken = "Token registrasi wajib diisi"
         if (!username.trim()) newErrors.username = "Username harus diisi"
         else if (username.length < 3) newErrors.username = "Username minimal 3 karakter"
         if (!password) newErrors.password = "Password harus diisi"
@@ -41,17 +45,17 @@ export default function SignUpPage() {
         setIsLoading(true)
         setErrors({})
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admins`, {
+            // ✅ FIX: Panggil internal API route, bukan backend langsung
+            // Internal route yang akan memvalidasi token & forward ke backend
+            const res = await fetch("/api/auth/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "app-key": `${process.env.NEXT_PUBLIC_APP_KEY}`
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    registrationToken,
                     username: username.trim(),
                     password,
                     name: name.trim(),
-                    phone: phone.trim()
+                    phone: phone.trim(),
                 }),
             })
             const data = await res.json()
@@ -59,7 +63,6 @@ export default function SignUpPage() {
                 setErrors({ general: data.message || "Gagal melakukan registrasi" })
                 return
             }
-            // ✅ router.push — bukan window.location.href
             router.push("/sign-in")
         } catch {
             setErrors({ general: "Terjadi kesalahan jaringan. Silakan coba lagi." })
@@ -78,7 +81,7 @@ export default function SignUpPage() {
         }`
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#E1EEFB] to-[#F0F7FF] flex items-center justify-center p-4 sm:p-6">
+        <div className="min-h-screen bg-linear-to-b from-[#E1EEFB] to-[#F0F7FF] flex items-center justify-center p-4 sm:p-6">
             <div className="relative w-full max-w-2xl">
                 <Link href="/"
                     className="inline-flex items-center gap-2 text-[#1E4A7A] hover:text-[#0A2A44] mb-6 text-lg font-medium transition-colors group"
@@ -88,27 +91,52 @@ export default function SignUpPage() {
                 </Link>
 
                 <div className="bg-white rounded-3xl shadow-2xl border-2 border-[#C2D9F0] overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-[#1E4A7A] to-[#0A2A44] p-8 text-center">
+                    <div className="bg-linear-to-r from-[#1E4A7A] to-[#0A2A44] p-8 text-center">
                         <div className="flex justify-center mb-4">
                             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                                 <Droplet className="w-10 h-10 text-white" />
                             </div>
                         </div>
                         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Daftar Admin PDAM</h1>
-                        <p className="text-[#E1EEFB] text-lg">Buat akun baru untuk mengelola sistem PDAM</p>
+                        <p className="text-[#E1EEFB] text-lg">Diperlukan token registrasi dari administrator</p>
                     </div>
 
-                    {/* Form */}
                     <div className="p-8 md:p-10">
                         {errors.general && (
                             <div className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3">
-                                <AlertCircle className="w-6 h-6 flex-shrink-0" />
+                                <AlertCircle className="w-6 h-6 shrink-0" />
                                 <span className="text-lg">{errors.general}</span>
                             </div>
                         )}
 
                         <form onSubmit={handleSignUp} className="space-y-6">
+                            {/* ✅ Registration Token Field */}
+                            <div className="space-y-2">
+                                <label htmlFor="registrationToken" className="text-lg font-semibold text-[#0A2A44]">
+                                    Token Registrasi <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="password"
+                                        id="registrationToken"
+                                        value={registrationToken}
+                                        onChange={e => setRegistrationToken(e.target.value)}
+                                        placeholder="Masukkan token yang diberikan admin"
+                                        className={`${inputClass(errors.registrationToken)} pl-12`}
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                                {errors.registrationToken && (
+                                    <p className="text-red-600 text-base flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" /> {errors.registrationToken}
+                                    </p>
+                                )}
+                                <p className="text-gray-500 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                                    Hubungi administrator sistem untuk mendapatkan token registrasi.
+                                </p>
+                            </div>
+
                             {/* Username */}
                             <div className="space-y-2">
                                 <label htmlFor="username" className="text-lg font-semibold text-[#0A2A44]">
@@ -125,7 +153,6 @@ export default function SignUpPage() {
                                         <AlertCircle className="w-4 h-4" /> {errors.username}
                                     </p>
                                 )}
-                                <p className="text-gray-500 text-base">Minimal 3 karakter</p>
                             </div>
 
                             {/* Password */}
@@ -192,7 +219,6 @@ export default function SignUpPage() {
                                         <AlertCircle className="w-4 h-4" /> {errors.phone}
                                     </p>
                                 )}
-                                <p className="text-gray-500 text-base">Contoh: 81234567890 (tanpa 0 di depan)</p>
                             </div>
 
                             {/* Password checklist */}
@@ -212,7 +238,6 @@ export default function SignUpPage() {
                                 </ul>
                             </div>
 
-                            {/* Terms */}
                             <div className="flex items-start gap-3">
                                 <input type="checkbox" id="terms" required
                                     className="w-5 h-5 mt-1 border-2 border-[#C2D9F0] rounded"
@@ -225,7 +250,6 @@ export default function SignUpPage() {
                                 </label>
                             </div>
 
-                            {/* Submit */}
                             <button type="submit" disabled={isLoading}
                                 className="w-full bg-[#1E4A7A] hover:bg-[#0A2A44] text-white text-xl py-5 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
                             >
@@ -242,10 +266,6 @@ export default function SignUpPage() {
                         </form>
                     </div>
                 </div>
-
-                <p className="text-center text-gray-500 text-base mt-6">
-                    Dengan mendaftar, Anda akan mendapatkan akses sebagai Admin PDAM
-                </p>
             </div>
         </div>
     )

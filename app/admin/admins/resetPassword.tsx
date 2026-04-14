@@ -9,34 +9,50 @@ import { getCookie } from "cookies-next/client"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
-const ResetPasswordCustomer = ({ selectedData }: { selectedData: Admin }) => {
+// ✅ FIX: Nama komponen diperbaiki dari ResetPasswordCustomer → ResetPasswordAdmin
+const ResetPasswordAdmin = ({ selectedData }: { selectedData: Admin }) => {
     const router = useRouter()
 
     const [open, setOpen] = useState<boolean>(false)
+    // ✅ FIX #2: Password selalu kosong — tidak di-prefill dari API
     const [password, setPassword] = useState<string>("")
+    const [confirmPassword, setConfirmPassword] = useState<string>("")
+    // ✅ QUALITY: Loading state
+    const [loading, setLoading] = useState<boolean>(false)
 
     const openModal = () => {
         setOpen(true)
-        setPassword(selectedData.user.password)
+        setPassword("") // ✅ Tidak pakai selectedData.user.password
+        setConfirmPassword("")
     }
 
     const handleSubmit = async (e: FormEvent) => {
-        try {
-            e.preventDefault()
+        e.preventDefault()
 
+        if (!password.trim()) {
+            toast.warning("Password tidak boleh kosong")
+            return
+        }
+        if (password !== confirmPassword) {
+            toast.warning("Konfirmasi password tidak cocok")
+            return
+        }
+        if (password.length < 6) {
+            toast.warning("Password minimal 6 karakter")
+            return
+        }
+
+        setLoading(true)
+        try {
             const token = await getCookie("accessToken")
-            const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/admins/${selectedData.id}`
-            const payload = JSON.stringify({ password })
+            const url = `/api/backend/admins/${selectedData.id}`
 
             const response = await fetch(url, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
-                    Authorization: `Bearer ${token}`
-                },
-                body: payload
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password })
             })
 
             const result = await response.json()
@@ -49,6 +65,8 @@ const ResetPasswordCustomer = ({ selectedData }: { selectedData: Admin }) => {
             }
         } catch (error) {
             toast.error(`Something went wrong, ${error}`)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -61,23 +79,49 @@ const ResetPasswordCustomer = ({ selectedData }: { selectedData: Admin }) => {
                 <DialogContent>
                     <form onSubmit={handleSubmit}>
                         <DialogHeader>
-                            <DialogTitle>Reset Customer Password</DialogTitle>
+                            <DialogTitle>Reset Password Admin</DialogTitle>
                             <DialogDescription>
-                                Make changes to your customer password here. Click Save when you're done.
+                                Masukkan password baru untuk <strong>{selectedData.name}</strong>.
                             </DialogDescription>
                         </DialogHeader>
-                        <FieldGroup>
+
+                        {/* ✅ BUG FIX: DialogFooter di luar FieldGroup */}
+                        <FieldGroup className="my-4">
                             <Field>
-                                <label htmlFor="password">Password</label>
-                                <Input id="password" name="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <label htmlFor="reset-admin-password">Password Baru</label>
+                                <Input
+                                    id="reset-admin-password"
+                                    name="password"
+                                    type="password"
+                                    placeholder="Masukkan password baru"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                             </Field>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button type="submit">Save Changes</Button>
-                            </DialogFooter>
+                            <Field>
+                                <label htmlFor="reset-admin-confirm">Konfirmasi Password</label>
+                                <Input
+                                    id="reset-admin-confirm"
+                                    name="confirmPassword"
+                                    type="password"
+                                    placeholder="Ulangi password baru"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </Field>
                         </FieldGroup>
+
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="outline" type="button" disabled={loading}>Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit" disabled={loading}>
+                                {loading && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                                {loading ? "Menyimpan..." : "Save Changes"}
+                            </Button>
+                        </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
@@ -85,4 +129,4 @@ const ResetPasswordCustomer = ({ selectedData }: { selectedData: Admin }) => {
     )
 }
 
-export default ResetPasswordCustomer
+export default ResetPasswordAdmin

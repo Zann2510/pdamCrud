@@ -75,7 +75,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section - Dengan kontras tinggi */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-[#E1EEFB] to-[#F0F7FF]">
+      <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-linear-to-b from-[#E1EEFB] to-[#F0F7FF]">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content - Font lebih besar */}
@@ -136,11 +136,11 @@ export default function LandingPage() {
                   alt="Water Management"
                   className="w-full h-auto object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1E4A7A]/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-[#1E4A7A]/30 to-transparent" />
               </div>
               
               {/* Floating Card - Lebih besar */}
-              <div className="absolute -bottom-8 -left-8 bg-white rounded-2xl shadow-2xl p-6 max-w-[250px] border-l-4 border-[#1E4A7A]">
+              <div className="absolute -bottom-8 -left-8 bg-white rounded-2xl shadow-2xl p-6 max-w-62.5 border-l-4 border-[#1E4A7A]">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-[#E1EEFB] rounded-xl flex items-center justify-center">
                     <Shield className="w-7 h-7 text-[#1E4A7A]" />
@@ -261,21 +261,21 @@ export default function LandingPage() {
               
               <div className="space-y-5 mb-10">
                 <div className="flex items-start gap-4">
-                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] shrink-0 mt-1" />
                   <div>
                     <h4 className="text-xl font-bold text-[#0A2A44] mb-1">Antarmuka Ramah Lansia</h4>
                     <p className="text-lg text-[#2C3E50]">Font besar, kontras tinggi, dan navigasi sederhana</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] shrink-0 mt-1" />
                   <div>
                     <h4 className="text-xl font-bold text-[#0A2A44] mb-1">Layanan Prioritas</h4>
                     <p className="text-lg text-[#2C3E50]">Antrian khusus dan petugas sabar untuk lansia</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-7 h-7 text-[#1E4A7A] shrink-0 mt-1" />
                   <div>
                     <h4 className="text-xl font-bold text-[#0A2A44] mb-1">Pendampingan Langsung</h4>
                     <p className="text-lg text-[#2C3E50]">Petugas siap datang ke rumah untuk membantu</p>
@@ -298,7 +298,7 @@ export default function LandingPage() {
                 alt="Elderly using tablet"
                 className="rounded-3xl shadow-2xl border-4 border-white"
               />
-              <div className="absolute -bottom-6 -right-6 bg-[#1E4A7A] text-white rounded-2xl p-6 shadow-xl max-w-[250px]">
+              <div className="absolute -bottom-6 -right-6 bg-[#1E4A7A] text-white rounded-2xl p-6 shadow-xl max-w-62.5">
                 <p className="text-2xl font-bold">15+ Tahun</p>
                 <p className="text-lg">Melayani Lansia dengan Sepenuh Hati</p>
               </div>

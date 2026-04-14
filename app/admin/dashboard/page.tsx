@@ -47,7 +47,7 @@ export default async function DashboardPage() {
     return (
         <div className="p-6 space-y-6 animate-fade-in">
             {/* Greeting Banner */}
-            <div className="bg-gradient-to-r from-[#0F5B8C] to-[#2B7CB0] rounded-xl p-6 text-white shadow">
+            <div className="bg-linear-to-r from-[#0F5B8C] to-[#2B7CB0] rounded-xl p-6 text-white shadow">
                 <p className="text-[#E6F0F9] text-sm">Selamat datang kembali,</p>
                 <h1 className="text-2xl font-bold mt-0.5">{admin?.name ?? "Admin"} 👋</h1>
                 <p className="text-[#E6F0F9] text-sm mt-2">
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
                 <DataCard title="Info Akun Saya" icon={<UserCog className="w-4 h-4" />}>
                     {admin ? (
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-[#0F5B8C] to-[#2B7CB0] rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                            <div className="w-14 h-14 bg-linear-to-br from-[#0F5B8C] to-[#2B7CB0] rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0">
                                 {admin.name?.charAt(0) ?? "A"}
                             </div>
                             <div className="space-y-1">

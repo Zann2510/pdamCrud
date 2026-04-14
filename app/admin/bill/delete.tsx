@@ -7,21 +7,22 @@ import { getCookie } from "cookies-next/client"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 const DeleteBill = ({ selectedData }: { selectedData: Bill }) => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
+    // ✅ QUALITY: Loading state untuk cegah double-click
+    const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
+        setLoading(true)
         try {
             const token = await getCookie("accessToken")
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/bills/${selectedData.id}`, {
+            const res = await fetch(`/api/backend/bills/${selectedData.id}`, {
                 method: "DELETE",
-                headers: {
-                    "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
-                    "Authorization": `Bearer ${token}`
-                }
+                headers: { "Authorization": `Bearer ${token}` }
             })
             const result = await res.json()
             if (result?.success) {
@@ -33,6 +34,8 @@ const DeleteBill = ({ selectedData }: { selectedData: Bill }) => {
             }
         } catch {
             toast.error("Terjadi kesalahan. Coba lagi.")
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -48,10 +51,8 @@ const DeleteBill = ({ selectedData }: { selectedData: Bill }) => {
                         <DialogDescription>
                             Hapus tagihan <strong>{selectedData.customer?.name}</strong> periode{" "}
                             <strong>
-                                {/* ✅ Gunakan month + year bukan period */}
                                 {new Date(selectedData.year, selectedData.month - 1).toLocaleDateString("id-ID", {
-                                    month: "long",
-                                    year: "numeric"
+                                    month: "long", year: "numeric"
                                 })}
                             </strong>
                             ? Aksi ini tidak bisa dibatalkan.
@@ -59,9 +60,12 @@ const DeleteBill = ({ selectedData }: { selectedData: Bill }) => {
                     </DialogHeader>
                     <DialogFooter className="mt-4">
                         <DialogClose asChild>
-                            <Button variant="outline">Batal</Button>
+                            <Button variant="outline" type="button" disabled={loading}>Batal</Button>
                         </DialogClose>
-                        <Button type="submit" variant="outline">Hapus</Button>
+                        <Button type="submit" variant="destructive" disabled={loading}>
+                            {loading && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                            {loading ? "Menghapus..." : "Hapus"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

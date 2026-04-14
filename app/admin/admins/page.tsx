@@ -68,7 +68,7 @@ export default async function AdminsPage(prop: Props) {
                                 {/* Header */}
                                 <div className="flex items-start justify-between mb-5">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-md">
+                                        <div className="w-16 h-16 bg-linear-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-md">
                                             {admin.name?.charAt(0).toUpperCase()}
                                         </div>
                                         <div>

@@ -115,7 +115,7 @@ export default async function BillPage(prop: Props) {
                                 {/* Header */}
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                        <div className="w-12 h-12 bg-linear-to-br from-[#1E4A7A] to-[#0A2A44] rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                                             {bill.customer?.name?.charAt(0).toUpperCase() ?? "?"}
                                         </div>
                                         <div>
