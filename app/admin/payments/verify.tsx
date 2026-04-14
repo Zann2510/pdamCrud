@@ -1,4 +1,3 @@
-// app/admin/payments/reject.tsx
 "use client"
 
 import { Payment } from "../../types"
@@ -8,9 +7,9 @@ import { getCookie } from "cookies-next/client"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
-import { XCircle } from "lucide-react"  // ← ganti dari CheckCircle
+import { CheckCircle } from "lucide-react"
 
-const RejectPayment = ({ payment }: { payment: Payment }) => {
+const VerifyPayment = ({ payment }: { payment: Payment }) => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
 
@@ -18,20 +17,23 @@ const RejectPayment = ({ payment }: { payment: Payment }) => {
         e.preventDefault()
         try {
             const token = await getCookie("accessToken")
+
+            // ✅ Sesuai Postman: PATCH /payments/:id — tanpa body
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_API_URL}/payments/${payment.id}/reject`, // ← GANTI dari /approve
+                `${process.env.NEXT_PUBLIC_BASE_API_URL}/payments/${payment.id}`,
                 {
                     method: "PATCH",
                     headers: {
                         "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                         "Authorization": `Bearer ${token}`
                     }
+                    // ✅ Tidak perlu body sama sekali
                 }
             )
             const result = await res.json()
             if (result?.success) {
                 setOpen(false)
-                toast.success("Pembayaran berhasil ditolak")
+                toast.success("Pembayaran berhasil diverifikasi")
                 setTimeout(() => router.refresh(), 1000)
             } else {
                 toast.warning(result.message)
@@ -44,27 +46,26 @@ const RejectPayment = ({ payment }: { payment: Payment }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-50">
-                    <XCircle className="w-4 h-4 mr-1" /> Tolak
+                <Button variant="default" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                    <CheckCircle className="w-4 h-4 mr-1" /> Verifikasi
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Tolak Pembayaran</DialogTitle>
+                        <DialogTitle>Verifikasi Pembayaran</DialogTitle>
                         <DialogDescription>
-                            Tolak pembayaran sebesar{" "}
-                            <strong>Rp {payment.amount.toLocaleString("id-ID")}</strong>{" "}
-                            dari <strong>{payment.customer?.name}</strong>?
-                            Customer perlu mengajukan pembayaran ulang.
+                            Konfirmasi pembayaran dari{" "}
+                            <strong>{payment.customer?.name}</strong>?
+                            Bill terkait akan otomatis ditandai lunas.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="mt-4">
                         <DialogClose asChild>
                             <Button variant="outline">Batal</Button>
                         </DialogClose>
-                        <Button type="submit" variant="destructive">
-                            Ya, Tolak
+                        <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
+                            Ya, Verifikasi
                         </Button>
                     </DialogFooter>
                 </form>
@@ -73,4 +74,4 @@ const RejectPayment = ({ payment }: { payment: Payment }) => {
     )
 }
 
-export default RejectPayment
+export default VerifyPayment

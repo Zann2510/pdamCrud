@@ -4,11 +4,9 @@ import { Payment } from "../../types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
 import { Button } from "../../../components/ui/button"
 import { MoreVertical } from "lucide-react"
-import ApprovePayment from "./approve"
-import RejectPayment from "./reject"
+import VerifyPayment from "./verify"
 
 export function PaymentActions({ payment }: { payment: Payment }) {
-    // Hanya tampilkan action jika masih PENDING
     if (payment.status !== "PENDING") return null
 
     return (
@@ -20,10 +18,8 @@ export function PaymentActions({ payment }: { payment: Payment }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 p-1">
                 <DropdownMenuItem asChild onSelect={e => e.preventDefault()}>
-                    <div className="w-full"><ApprovePayment payment={payment} /></div>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild onSelect={e => e.preventDefault()}>
-                    <div className="w-full"><RejectPayment payment={payment} /></div>
+                    {/* ✅ Hanya satu action: Verifikasi */}
+                    <div className="w-full"><VerifyPayment payment={payment} /></div>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
