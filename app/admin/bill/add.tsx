@@ -15,6 +15,8 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
     const [open, setOpen] = useState(false)
     const [customer_id, setCustomerId] = useState<number>(0)
     const [usage_value, setUsageValue] = useState<number>(0)
+    // ✅ Tambahan state untuk measurement_number sesuai permintaan API
+    const [measurement_number, setMeasurementNumber] = useState<string>("") 
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
 
@@ -22,11 +24,11 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
         setOpen(true)
         setCustomerId(0)
         setUsageValue(0)
+        setMeasurementNumber("") // Reset field saat modal dibuka
         setMonth(new Date().getMonth() + 1)
         setYear(new Date().getFullYear())
     }
 
-    // Helper: konversi input type="month" (yyyy-MM) → month + year
     const periodValue = `${year}-${String(month).padStart(2, "0")}`
     const handlePeriodChange = (val: string) => {
         const [y, m] = val.split("-")
@@ -40,6 +42,13 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
             toast.warning("Pilih pelanggan terlebih dahulu.")
             return
         }
+        
+        // Validasi ekstra di Frontend agar aman
+        if (!measurement_number.trim()) {
+            toast.warning("Nomor pencatatan meteran tidak boleh kosong.")
+            return
+        }
+
         try {
             const token = await getCookie("accessToken")
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/bills`, {
@@ -49,8 +58,8 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                     "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                     "Authorization": `Bearer ${token}`
                 },
-                // ✅ Kirim field sesuai Bill type: usage_value, month, year
-                body: JSON.stringify({ customer_id, usage_value, month, year })
+                // ✅ Sertakan measurement_number di payload
+                body: JSON.stringify({ customer_id, usage_value, month, year, measurement_number })
             })
             const result = await res.json()
             if (result?.success) {
@@ -96,6 +105,20 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                                 ))}
                             </select>
                         </Field>
+                        
+                        {/* ✅ Field Input Baru untuk Measurement Number */}
+                        <Field>
+                            <label htmlFor="measurement_number">No. Pencatatan Meteran</label>
+                            <Input
+                                id="measurement_number"
+                                type="text"
+                                required
+                                placeholder="Contoh: MTR-001"
+                                value={measurement_number}
+                                onChange={(e) => setMeasurementNumber(e.target.value)}
+                            />
+                        </Field>
+
                         <Field>
                             <label htmlFor="period">Periode (Bulan)</label>
                             <Input
@@ -121,7 +144,7 @@ const AddBill = ({ customers }: { customers: Customer[] }) => {
                     </FieldGroup>
                     <DialogFooter className="mt-4">
                         <DialogClose asChild>
-                            <Button variant="outline">Batal</Button>
+                            <Button variant="outline" type="button">Batal</Button>
                         </DialogClose>
                         <Button type="submit">Simpan</Button>
                     </DialogFooter>

@@ -8,9 +8,13 @@ import Pagination from "../../../components/Pagination"
 import { PaymentActions } from "./actions"
 import Link from "next/link"
 
+// WAJIB: Matikan cache agresif Next.js agar data admin selalu up-to-date
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PaymentResult = { 
     success: boolean; message: string
-    data: Payment[]; count: number 
+    data: any[]; count: number // Ubah ke any[] sementara karena format asli API beda
 }
 
 async function getPayments(
@@ -48,7 +52,7 @@ type Props = {
 }
 
 const STATUS_TABS = [
-    { value: "",         label: "Semua",   icon: Banknote },
+    { value: "",        label: "Semua",   icon: Banknote },
     { value: "PENDING",  label: "Pending", icon: Clock },
     { value: "APPROVED", label: "Disetujui", icon: CheckCircle },
     { value: "REJECTED", label: "Ditolak",   icon: XCircle },
@@ -61,7 +65,27 @@ export default async function AdminPaymentsPage(prop: Props) {
     const search   = params?.search   || ""
     const status   = params?.status   || ""
 
-    const { count, data: payments } = await getPayments(page, quantity, search, status)
+    // 1. Ambil data mentah (raw) dari API
+    const { count, data: rawPayments } = await getPayments(page, quantity, search, status)
+
+    // 2. MAPPING DATA: Paksa format API backend agar cocok dengan komponen Frontend
+    const payments = rawPayments.map((item: any) => {
+        let mappedStatus = "PENDING";
+        if (item.verified === true) {
+            mappedStatus = "APPROVED";
+        }
+
+        return {
+            ...item,
+            id: item.id,
+            amount: item.total_amount || 0, // Ambil dari total_amount
+            status: mappedStatus,           // Terjemahkan boolean verified jadi text
+            customer: item.bill?.customer || { name: "Tidak diketahui", customer_number: "-" }, // Ekstrak dari bill
+            payment_method: "Transfer",     // Default, karena API tidak menyediakan ini
+            createdAt: item.createdAt || new Date().toISOString(),
+            notes: item.notes || ""
+        } as Payment; // Paksa cast ke type Payment milik FE
+    });
 
     const totalPending  = payments.filter(p => p.status === "PENDING").length
     const totalApproved = payments.filter(p => p.status === "APPROVED").length
@@ -165,13 +189,13 @@ export default async function AdminPaymentsPage(prop: Props) {
                                 <div className="bg-gray-50 rounded-xl p-3 mb-4">
                                     <p className="text-xs text-gray-500 mb-0.5">Jumlah Bayar</p>
                                     <p className="text-xl font-bold text-[#0A2A44]">
-                                        Rp {payment.amount.toLocaleString("id-ID")}
-                                    </p>
+                                        Rp {(payment.amount || 0).toLocaleString("id-ID")}
+                                        </p>
                                 </div>
 
                                 {/* Info */}
                                 <div className="space-y-1.5 mb-4 text-sm text-gray-600">
-                                    <p>Metode: <span className="font-medium">{payment.payment_method.replace("_", " ")}</span></p>
+                                    <p>Metode: <span className="font-medium">{payment.payment_method?.replace("_", " ") || "-"}</span></p>
                                     <p>Tanggal: <span className="font-medium">{new Date(payment.createdAt).toLocaleDateString("id-ID")}</span></p>
                                     {payment.notes && (
                                         <p className="text-xs text-gray-500 italic">"{payment.notes}"</p>

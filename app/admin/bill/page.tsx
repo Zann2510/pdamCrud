@@ -51,7 +51,7 @@ export default async function BillPage(prop: Props) {
     const totalPaid = bills.filter(b => b.paid === true).length
     const totalRevenue = bills
         .filter(b => b.paid === true)
-        .reduce((sum, b) => sum + (b.usage_value * b.price), 0)
+        .reduce((sum, b) => sum + (b.usage_value * (b.price || 0)), 0)
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 animate-fade-in">

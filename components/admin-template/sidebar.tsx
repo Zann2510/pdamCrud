@@ -17,7 +17,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "../../lib/utils"
 import { Items } from "../../app/admin_menu"
 import { Droplets } from "lucide-react"
-import LogoutButton from "../logoutbutton"
+import LogoutButton from "../ui/logoutbutton"
+
 
 
 export function AppSidebar() {

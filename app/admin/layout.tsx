@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
             <div className="flex w-full min-h-screen overflow-hidden bg-gray-50">
-                <AppSidebar />
+                <AppSidebar/>
                 <main className="flex-1 flex flex-col overflow-auto min-w-0">
                     <AdminTopbar />
                     {children}

@@ -49,14 +49,11 @@ export default function Search({ search = "", placeholder = "Cari...", className
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                className="w-full p-4 pr-12 text-lg border-2 border-[#C2D9F0] rounded-xl bg-white 
-                         focus:outline-none focus:border-[#1E4A7A] focus:ring-4 focus:ring-[#1E4A7A]/20 
-                         transition-all placeholder:text-gray-400"
+                className="w-full p-4 pr-12 text-lg border-2 border-[#C2D9F0] rounded-xl bg-white focus:outline-none focus:border-[#1E4A7A] focus:ring-4 focus:ring-[#1E4A7A]/20 transition-all placeholder:text-gray-400"
             />
             <button
                 onClick={handleSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 
-                         hover:text-[#1E4A7A] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#1E4A7A] transition-colors"
                 aria-label="Cari"
             >
                 <SearchIcon className="w-6 h-6" />

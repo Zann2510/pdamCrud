@@ -32,7 +32,24 @@ async function getMyPayments(): Promise<Payment[]> {
             cache: "no-store"
         })
         const data = await res.json()
-        return res.ok ? data.data : []
+        if (!res.ok) return []
+
+        // === MAPPING DATA API KE BENTUK FRONTEND ===
+        return data.data.map((item: any) => {
+            let mappedStatus = "PENDING";
+            // Jika verified dari API adalah true, ubah jadi APPROVED
+            if (item.verified === true) {
+                mappedStatus = "APPROVED";
+            }
+
+            return {
+                ...item,
+                amount: item.total_amount || 0, // Ambil nominal dari total_amount API
+                status: mappedStatus,           // Masukkan status yang sudah diterjemahkan
+                createdAt: item.createdAt || new Date().toISOString()
+            } as Payment;
+        });
+
     } catch {
         return []
     }
